@@ -24,8 +24,11 @@ class ViewController: UIViewController {
     var timer = Timer()
     var isTimerStarted = false
     
-    var seconds = 10
-    let timeForWork = 10
+    var seconds = 1500
+    
+    var isMoodWork = true
+    let timeForWork = 1500
+    let timeForRest = 300
     
     let shape = CAShapeLayer()
     let trackShape = CAShapeLayer()
@@ -36,7 +39,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
-        
     }
 
     func setupView(){
@@ -61,8 +63,8 @@ class ViewController: UIViewController {
         
         stopButton = UIButton(frame: CGRect(x: 220, y: view.frame.size.height - 90, width: view.frame.size.width - 250, height: 50))
         view.addSubview(stopButton)
-//        stopButton.isEnabled = true
-//        stopButton.alpha = 1.0
+        stopButton.isEnabled = true
+        stopButton.alpha = 1.0
         stopButton.setTitle("Stop", for: .normal)
         stopButton.setTitleColor(UIColor.white, for: .normal)
         stopButton.backgroundColor = .systemTeal
@@ -84,10 +86,15 @@ class ViewController: UIViewController {
             
             isTimerStarted = true
             
-            
-            startButton.setTitle("Pause", for: .normal)
-            startButton.setTitleColor(UIColor.white, for: .normal)
-            startButton.backgroundColor = UIColor.red
+            if isMoodWork == false {
+                startButton.setTitle("Pause", for: .normal)
+                startButton.setTitleColor(UIColor.white, for: .normal)
+                startButton.backgroundColor = UIColor.red
+            } else {
+                startButton.setTitle("Pause", for: .normal)
+                startButton.setTitleColor(UIColor.red, for: .normal)
+                startButton.backgroundColor = UIColor.white
+            }
             
             stopButton.isEnabled = true
             stopButton.alpha = 1
@@ -115,8 +122,13 @@ class ViewController: UIViewController {
         startButton.setTitleColor(UIColor.white, for: .normal)
         startButton.backgroundColor = UIColor.systemIndigo
         
-        seconds = timeForWork
-        timeLabel.text = "25 : 00"
+        if isMoodWork == false {
+            seconds = timeForRest
+            timeLabel.text = "05 : 00"
+        } else {
+            seconds = timeForWork
+            timeLabel.text = "25 : 00"
+        }
         
         isTimerStarted = false
     }
@@ -147,7 +159,13 @@ class ViewController: UIViewController {
             startButton.setTitleColor(UIColor.white, for: .normal)
             startButton.backgroundColor = UIColor.systemIndigo
             
-            seconds = timeForWork
+            if isMoodWork == false {
+                isMoodWork = true
+                seconds = timeForWork
+            } else {
+                isMoodWork = false
+                seconds = timeForRest
+            }
             
             stopButtonAction()
             startButtonAction()
@@ -206,8 +224,12 @@ class ViewController: UIViewController {
         
         shape.path = circlePath.cgPath
         shape.lineWidth = 15
-        shape.strokeColor = UIColor.red.cgColor
         
+        if isMoodWork == false {
+            shape.strokeColor = UIColor.green.cgColor
+        } else {
+            shape.strokeColor = UIColor.red.cgColor
+        }
         shape.fillColor = UIColor.clear.cgColor
         shape.lineCap = .round
         shape.strokeEnd = 0
@@ -272,6 +294,7 @@ class ViewController: UIViewController {
     }
 }
 
+    // MARK: - Extension
 extension Int{
     var degreesToRadians : CGFloat {
         return CGFloat(self) * .pi / 180
