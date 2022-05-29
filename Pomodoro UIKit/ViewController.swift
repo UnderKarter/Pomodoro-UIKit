@@ -27,6 +27,12 @@ class ViewController: UIViewController {
     var seconds = 10
     let timeForWork = 10
     
+    let shape = CAShapeLayer()
+    let trackShape = CAShapeLayer()
+    let animation = CABasicAnimation(keyPath: "strokeEnd")
+    
+    var isAnimationStarted = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -40,6 +46,8 @@ class ViewController: UIViewController {
         timeLabel.center = view.center
         
         createButtons()
+        staticCircle()
+        actionCircle()
     }
 
     func createButtons() {
@@ -71,6 +79,8 @@ class ViewController: UIViewController {
         if !isTimerStarted {
             
             startTimer()
+            actionCircle()
+            startResumAnimation()
             
             isTimerStarted = true
             
@@ -84,6 +94,7 @@ class ViewController: UIViewController {
             
         } else {
             timer.invalidate()
+            pauseAnimation()
             
             isTimerStarted = false
             
@@ -96,6 +107,7 @@ class ViewController: UIViewController {
     
     @objc func stopButtonAction() {
         timer.invalidate()
+        stopAnimation()
         
         stopButton.isEnabled = false
         stopButton.alpha = 0.5
@@ -168,6 +180,101 @@ class ViewController: UIViewController {
         }
         
         return timeString
+    }
+    
+    //MARK: - Animation func
+    func staticCircle() {
+        let circlePath = UIBezierPath(arcCenter: view.center,
+                                      radius: 120,
+                                      startAngle: -90.degreesToRadians,
+                                      endAngle: 270.degreesToRadians,
+                                      clockwise: true)
+        
+        trackShape.path = circlePath.cgPath
+        trackShape.fillColor = UIColor.clear.cgColor
+        trackShape.lineWidth = 18
+        trackShape.strokeColor = UIColor.lightGray.cgColor
+        view.layer.addSublayer(trackShape)
+    }
+    
+    func actionCircle() {
+        let circlePath = UIBezierPath(arcCenter: view.center,
+                                      radius: 120,
+                                      startAngle: -90.degreesToRadians,
+                                      endAngle: 270.degreesToRadians,
+                                      clockwise: true)
+        
+        shape.path = circlePath.cgPath
+        shape.lineWidth = 15
+        shape.strokeColor = UIColor.red.cgColor
+        
+        shape.fillColor = UIColor.clear.cgColor
+        shape.lineCap = .round
+        shape.strokeEnd = 0
+        view.layer.addSublayer(shape)
+    }
+    
+    func startResumAnimation() {
+        if !isAnimationStarted {
+            startAnimation()
+        } else {
+            resumeAnimation()
+        }
+    }
+    
+    func startAnimation(){
+        resetAnimation()
+        
+        shape.strokeEnd = 0.0
+        animation.keyPath = "strokeEnd"
+        animation.fromValue = 0
+        animation.toValue = 1
+        animation.speed = 1.0
+        animation.duration = CFTimeInterval(seconds)
+        animation.isRemovedOnCompletion = true
+        animation.isAdditive = true
+        animation.fillMode = CAMediaTimingFillMode.forwards
+        
+        shape.add(animation, forKey: "strokeEnd")
+        isAnimationStarted = true
+    }
+    
+    func resetAnimation(){
+        shape.speed = 1.0
+        shape.timeOffset = 0.0
+        shape.beginTime = 0.0
+        shape.strokeEnd = 0.0
+        isAnimationStarted = false
+    }
+    
+    func pauseAnimation() {
+        let pausedTime = shape.convertTime(CACurrentMediaTime(), from: nil)
+        shape.speed = 0.0
+        shape.timeOffset = pausedTime
+    }
+    
+    func resumeAnimation() {
+        let pausedTime = shape.timeOffset
+        shape.speed = 1.0
+        shape.timeOffset = 0.0
+        shape.beginTime = 0.0
+        let timeSincePaused = shape.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+        shape.beginTime = timeSincePaused
+    }
+    
+    func stopAnimation() {
+        shape.speed = 1.0
+        shape.timeOffset = 0.0
+        shape.beginTime = 0.0
+        shape.strokeEnd = 0.0
+        shape.removeAllAnimations()
+        isAnimationStarted = false
+    }
+}
+
+extension Int{
+    var degreesToRadians : CGFloat {
+        return CGFloat(self) * .pi / 180
     }
 }
 
